@@ -1,51 +1,52 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 interface Props {
   onSelect: (city: string) => void
 }
 
 export function FavoriteCities({ onSelect }: Props) {
-  const [favorites, setFavorites] = useState<string[]>([])
+  const [favorites, setFavorites] = useState<any[]>([])
+
+  const fetchFavorites = async () => {
+    const supabase = createClient()
+
+    const { data, error } = await supabase
+      .from('favorite_cities')
+      .select('*')
+
+    if (!error && data) {
+      setFavorites(data)
+    }
+  }
 
   useEffect(() => {
-    const saved = localStorage.getItem('favorites')
-    if (saved) setFavorites(JSON.parse(saved))
+    fetchFavorites()
   }, [])
-
-  const removeCity = (city: string) => {
-    const updated = favorites.filter(c => c !== city)
-    setFavorites(updated)
-    localStorage.setItem('favorites', JSON.stringify(updated))
-  }
 
   return (
     <div className="rounded-xl border border-border/50 bg-card p-4">
-      <h3 className="text-lg font-semibold mb-3">⭐ Favorite Cities</h3>
+      <h3 className="text-lg font-semibold mb-4 text-yellow-400">
+        ⭐ Favorite Cities
+      </h3>
 
-      {favorites.length === 0 ? (
-        <p className="text-muted-foreground">No favorites yet</p>
-      ) : (
-        <div className="space-y-2">
-          {favorites.map(city => (
-            <div key={city} className="flex justify-between items-center">
-              <button
-                onClick={() => onSelect(city)}
-                className="text-blue-400 hover:underline"
-              >
-                {city}
-              </button>
-              <button
-                onClick={() => removeCity(city)}
-                className="text-red-400"
-              >
-                ✖
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="space-y-2">
+        {favorites.map((fav) => (
+          <div
+            key={fav.id}
+            className="flex justify-between items-center bg-black/30 p-2 rounded cursor-pointer"
+          >
+            <span
+              onClick={() => onSelect(fav.city)}
+              className="text-blue-400"
+            >
+              {fav.city}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

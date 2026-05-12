@@ -34,16 +34,24 @@ export function Dashboard() {
   const [currentCity, setCurrentCity] = useState<string | null>(null)
    // ✅ ADD HERE 👇
   const addFavorite = async () => {
-    if (!currentCity) return
+  if (!currentCity) return
 
-    const supabase = createClient()
+  const supabase = createClient()
 
-    await supabase.from('favorite_cities').insert([
-      { city: currentCity }
-    ])
+  const { error } = await supabase
+    .from('favorite_cities')
+    .insert([{ city: currentCity }])
 
-    alert("Saved!")
+  if (error) {
+    alert('Failed to save')
+    return
   }
+
+  alert('Saved!')
+
+  // ✅ Refresh page data
+  window.location.reload()
+}
   const [showAlert, setShowAlert] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   // ✅ ADD HERE
