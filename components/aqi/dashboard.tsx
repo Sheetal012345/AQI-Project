@@ -24,10 +24,12 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 export function Dashboard() {
   const [userCity, setUserCity] = useState<string | null>(null)
   const getAlert = (aqi: number) => {
-  if (aqi > 200) return "Dangerous air quality!";
-  if (aqi > 150) return "Unhealthy air quality!";
-  if (aqi > 100) return "Moderate air quality";
-  return null;
+  if (aqi <= 50) return "Good air quality";
+  if (aqi <= 100) return "Moderate air quality";
+  if (aqi <= 150) return "Unhealthy for sensitive groups";
+  if (aqi <= 200) return "Unhealthy air quality";
+  if (aqi <= 300) return "Very unhealthy air quality";
+  return "Hazardous air quality!";
 };
   const [currentCity, setCurrentCity] = useState<string | null>(null)
    // ✅ ADD HERE 👇
@@ -52,7 +54,7 @@ export function Dashboard() {
     fetcher,
     { revalidateOnFocus: false }
   )
-
+  
   const { data: history, mutate: mutateHistory } = useSWR<AQIData[]>(
     currentCity ? `/api/history?city=${encodeURIComponent(currentCity)}&limit=24` : null,
     fetcher,
