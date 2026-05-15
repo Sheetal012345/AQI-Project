@@ -18,11 +18,12 @@ import { FavoriteCities } from './FavoriteCities'
 import { createClient } from '@/lib/supabase/client'
 import { PollutionSource } from './PollutionSource'
 import { MapRoute } from './MapRoute'
+import { AQIChatbot } from './AQIChatbot'
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function Dashboard() {
-  const [userCity, setUserCity] = useState<string | null>(null)
+ const [currentCity, setCurrentCity] = useState<string | null>('Mumbai')
   const getAlert = (aqi: number) => {
   if (aqi <= 50) return "Good air quality";
   if (aqi <= 100) return "Moderate air quality";
@@ -31,7 +32,7 @@ export function Dashboard() {
   if (aqi <= 300) return "Very unhealthy air quality";
   return "Hazardous air quality!";
 };
-  const [currentCity, setCurrentCity] = useState<string | null>(null)
+ 
    // ✅ ADD HERE 👇
   const addFavorite = async () => {
   if (!currentCity) return
@@ -125,48 +126,7 @@ export function Dashboard() {
     return () => clearTimeout(timer)
   }
 }, [currentAQI?.aqi])
-useEffect(() => {
-  if (!navigator.geolocation) {
-    console.log("Geolocation not supported")
-    return
-  }
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const lat = position.coords.latitude
-      const lon = position.coords.longitude
-      setCoords({
-  lat: position.coords.latitude,
-  lon: position.coords.longitude
-})
-
-      try {
-        const res = await fetch(
-          `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lon}&key=${process.env.NEXT_PUBLIC_OPENCAGE_KEY}`
-        )
-
-        const data = await res.json()
-
-        const city =
-          data.results[0]?.components?.city ||
-          data.results[0]?.components?.town ||
-          data.results[0]?.components?.state
-
-        if (city) {
-          setUserCity(city)
-          setCurrentCity(city)
-          handleSearch(city)
-        }
-      } catch (err) {
-        console.log("Location fetch error:", err)
-      }
-    },
-    (error) => {
-      console.log("Permission denied or error:", error)
-      alert("Location access denied. Please search manually.")
-    }
-  )
-}, [])
   return (
     <>
     {/* ✅ POPUP */}
@@ -226,11 +186,7 @@ useEffect(() => {
 
       <main className="container mx-auto px-4 py-6">
         <div className="mb-8">
-          {userCity && (
-  <p className="text-sm text-green-400 mb-2">
-    📍 Detected Location: {userCity}
-  </p>
-)}
+          
           <SearchInput onSearch={handleSearch} isLoading={isSearching} />
           {/* ✅ TEST BUTTON (ADD HERE) */}
   <button
@@ -274,6 +230,10 @@ useEffect(() => {
               </div>
               <div className="space-y-6">
                 <HealthRecommendations aqi={currentAQI.aqi} />
+                <AQIChatbot
+  aqi={currentAQI.aqi}
+  city={currentCity || 'Unknown'}
+/>
                 {coords && currentAQI && (
   <MapRoute
     lat={coords.lat}

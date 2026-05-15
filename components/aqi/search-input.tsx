@@ -12,12 +12,12 @@ interface SearchInputProps {
 }
 
 const popularCities = [
-  'New York',
-  'London',
-  'Tokyo',
-  'Paris',
-  'Beijing',
+  'Delhi',
   'Mumbai',
+  'Pune',
+  'Bangalore',
+  'Kolkata',
+  'Chennai'
 ]
 
 export function SearchInput({ onSearch, isLoading }: SearchInputProps) {
